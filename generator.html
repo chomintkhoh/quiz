@@ -1,58 +1,164 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
 <meta charset="UTF-8">
-<title>Generator</title>
+<title>Auto Image Swipe Quiz</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #111;
+  color: white;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.card {
+  width: 90%;
+  max-width: 500px;
+  background: white;
+  color: black;
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  transition: transform 0.25s ease, background 0.3s ease;
+}
+
+img {
+  width: 100%;
+  height: 320px;
+  object-fit: contain;
+  background: #eee;
+  border-radius: 12px;
+}
+
+.name {
+  font-size: 26px;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.correct {
+  background: #d4f8d4 !important;
+}
+</style>
 </head>
 
-<body style="font-family:Arial;padding:20px">
+<body>
 
-<h2>📦 Step 1: Image Quiz Generator</h2>
+<div class="container">
 
-<p>把圖片名稱填進去（之後可再升級自動掃描）</p>
+<div class="card" id="card">
+  <img id="img">
+  <div class="name" id="name"></div>
 
-<textarea id="list" style="width:100%;height:150px">
-japan.jpg
-france.jpg
-malaysia.jpg
-</textarea>
+  <label>
+    <input type="checkbox" onclick="markCorrect()">
+    Correct / Done
+  </label>
+</div>
 
-<br><br>
-
-<button onclick="generate()">Generate manifest.js</button>
-
-<pre id="out"></pre>
+</div>
 
 <script>
 
-function generate() {
+// 🚀 自動圖片列表（不用下載檔案）
+let data = [
+  "japan.jpg",
+  "france.jpg",
+  "malaysia.jpg"
+].map(file => ({
+  name: file.replace(".jpg","").toUpperCase(),
+  img: "images/" + file,
+  done: false
+}));
 
-  let files = document.getElementById("list").value
-    .split("\n")
-    .filter(f => f.trim() !== "");
+let current;
 
-  let data = files.map(file => {
-    let name = file.replace(".jpg","")
-                   .replace(".png","")
-                   .toUpperCase();
-
-    return {
-      name: name,
-      img: "images/" + file
-    };
-  });
-
-  let js = "window.DATA = " + JSON.stringify(data, null, 2);
-
-  document.getElementById("out").innerText = js;
-
-  // 👉 下載 manifest.js
-  let blob = new Blob([js], {type:"text/javascript"});
-  let a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "manifest.js";
-  a.click();
+// 🔁 取得未完成
+function pool() {
+  return data.filter(d => !d.done);
 }
+
+// 📦 load card
+function load() {
+  let p = pool();
+
+  if (p.length === 0) {
+    document.getElementById("name").innerText = "🎉 Finished!";
+    document.getElementById("img").src = "";
+    return;
+  }
+
+  let i = Math.floor(Math.random() * p.length);
+  current = p[i];
+
+  document.getElementById("img").src = current.img;
+  document.getElementById("name").innerText = current.name;
+}
+
+// ➡️ next
+function next() {
+  let card = document.getElementById("card");
+
+  card.style.transform = "translateX(-120%)";
+
+  setTimeout(() => {
+    card.style.transform = "translateX(0)";
+    load();
+  }, 200);
+}
+
+// ✅ correct
+function markCorrect() {
+  current.done = true;
+
+  let card = document.getElementById("card");
+  card.classList.add("correct");
+
+  setTimeout(() => {
+    card.classList.remove("correct");
+    next();
+  }, 300);
+}
+
+// ⌨️ keyboard
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") next();
+  if (e.key === "ArrowLeft") next();
+});
+
+// 📱 swipe
+let startX = 0;
+
+document.addEventListener("touchstart", e => {
+  startX = e.touches[0].clientX;
+});
+
+document.addEventListener("touchend", e => {
+  let endX = e.changedTouches[0].clientX;
+
+  if (Math.abs(startX - endX) > 50) next();
+});
+
+load();
 
 </script>
 
