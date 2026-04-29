@@ -2,10 +2,7 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<title>Swipe Quiz Auto</title>
-
-<!-- ✅ 讀取自動生成的題庫 -->
-<script src="manifest.js"></script>
+<title>Auto Image Swipe Quiz</title>
 
 <style>
 body {
@@ -29,17 +26,12 @@ body {
 .card {
   width: 90%;
   max-width: 500px;
-
   background: white;
   color: black;
-
   border-radius: 20px;
   padding: 20px;
-
   text-align: center;
-
   box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-
   transition: transform 0.25s ease, background 0.3s ease;
 }
 
@@ -87,33 +79,42 @@ label {
 
 <script>
 
-// 📦 從 manifest.js 讀資料
-let data = window.DATA || [];
-let current = null;
+// 🚀 自動圖片列表（不用下載檔案）
+let data = [
+  "japan.jpg",
+  "france.jpg",
+  "malaysia.jpg"
+].map(file => ({
+  name: file.replace(".jpg","").toUpperCase(),
+  img: "images/" + file,
+  done: false
+}));
 
-// 🔁 只取未完成
-function getPool() {
+let current;
+
+// 🔁 取得未完成
+function pool() {
   return data.filter(d => !d.done);
 }
 
-// 📦 載入題目
+// 📦 load card
 function load() {
-  let pool = getPool();
+  let p = pool();
 
-  if (pool.length === 0) {
-    document.getElementById("name").innerText = "🎉 All Done!";
+  if (p.length === 0) {
+    document.getElementById("name").innerText = "🎉 Finished!";
     document.getElementById("img").src = "";
     return;
   }
 
-  let i = Math.floor(Math.random() * pool.length);
-  current = pool[i];
+  let i = Math.floor(Math.random() * p.length);
+  current = p[i];
 
   document.getElementById("img").src = current.img;
   document.getElementById("name").innerText = current.name;
 }
 
-// ➡️ 下一張
+// ➡️ next
 function next() {
   let card = document.getElementById("card");
 
@@ -125,10 +126,8 @@ function next() {
   }, 200);
 }
 
-// ✅ 答對
+// ✅ correct
 function markCorrect() {
-  if (!current) return;
-
   current.done = true;
 
   let card = document.getElementById("card");
@@ -156,12 +155,9 @@ document.addEventListener("touchstart", e => {
 document.addEventListener("touchend", e => {
   let endX = e.changedTouches[0].clientX;
 
-  if (Math.abs(startX - endX) > 50) {
-    next();
-  }
+  if (Math.abs(startX - endX) > 50) next();
 });
 
-// 🚀 start
 load();
 
 </script>
