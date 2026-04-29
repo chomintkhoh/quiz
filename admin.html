@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Upload Images</title>
+</head>
+
+<body style="font-family:Arial;padding:20px">
+
+<h2>📦 Drag & Drop Image Upload</h2>
+
+<p>把圖片拖進來（會自動生成 data.js）</p>
+
+<input type="file" id="file" multiple accept="image/*">
+
+<br><br>
+
+<button onclick="generate()">Generate data.js</button>
+
+<pre id="out"></pre>
+
+<script>
+
+let filesList = [];
+
+document.getElementById("file").addEventListener("change", e => {
+  filesList = Array.from(e.target.files);
+  alert(filesList.length + " images loaded");
+});
+
+function generate(){
+
+  let data = filesList.map(f => {
+    return {
+      name: f.name.replace(/\.(jpg|png|jpeg)/i,"").toUpperCase(),
+      img: "images/" + f.name
+    };
+  });
+
+  let js = "window.DATA=" + JSON.stringify(data, null, 2);
+
+  document.getElementById("out").innerText = js;
+
+  let blob = new Blob([js], {type:"text/javascript"});
+  let a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "data.js";
+  a.click();
+}
+
+</script>
+
+</body>
+</html>
