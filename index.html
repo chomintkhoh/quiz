@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Swipe Quiz</title>
+
+<style>
+body {
+  font-family: Arial;
+  text-align: center;
+  margin: 0;
+  background: #f2f2f2;
+}
+
+.container {
+  max-width: 450px;
+  margin: auto;
+  padding-top: 30px;
+}
+
+.card {
+  background: white;
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+img {
+  width: 100%;
+  height: 280px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #eee;
+}
+
+.name {
+  font-size: 22px;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.swipe-left {
+  transform: translateX(-120%);
+  opacity: 0;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🌍 Swipe Quiz</h2>
+
+<div class="card" id="card">
+  <img id="img">
+  <div class="name" id="name"></div>
+
+  <!-- ✅ checkbox 放這裡 -->
+  <label>
+    <input type="checkbox" onclick="markCorrect()">
+    Correct / Done
+  </label>
+</div>
+
+<p id="remain"></p>
+
+</div>
+
+<script>
+
+// 📚 題庫
+let data = [
+  { name: "Japan", img: "images/japan.jpg", done: false },
+  { name: "France", img: "images/france.jpg", done: false },
+  { name: "Malaysia", img: "images/malaysia.jpg", done: false }
+];
+
+let pool = [];
+let current;
+
+// 🔄 更新可用題目
+function updatePool() {
+  pool = data.filter(item => item.done === false);
+}
+
+// 📦 載入題目
+function load() {
+  updatePool();
+
+  if (pool.length === 0) {
+    document.getElementById("name").innerText = "🎉 All Done!";
+    document.getElementById("img").src = "";
+    document.getElementById("remain").innerText = "";
+    return;
+  }
+
+  let i = Math.floor(Math.random() * pool.length);
+  current = pool[i];
+
+  document.getElementById("img").src = current.img;
+  document.getElementById("name").innerText = current.name;
+
+  updateRemain();
+}
+
+// ➡️ 下一張
+function next() {
+  let card = document.getElementById("card");
+
+  card.classList.add("swipe-left");
+
+  setTimeout(() => {
+    card.classList.remove("swipe-left");
+    load();
+  }, 200);
+}
+
+// ✅ 勾選正確
+function markCorrect() {
+  current.done = true;
+  next();
+}
+
+// ⌨️ 鍵盤控制
+document.addEventListener("keydown", function(e){
+  if (e.key === "ArrowRight") next();
+  if (e.key === "ArrowLeft") next();
+});
+
+// 📱 swipe
+let startX = 0;
+
+document.addEventListener("touchstart", e => {
+  startX = e.touches[0].clientX;
+});
+
+document.addEventListener("touchend", e => {
+  let endX = e.changedTouches[0].clientX;
+
+  if (Math.abs(startX - endX) > 50) {
+    next();
+  }
+});
+
+// 📊 顯示剩餘
+function updateRemain() {
+  document.getElementById("remain").innerText =
+    "Remaining: " + pool.length;
+}
+
+// start
+load();
+
+</script>
+
+</body>
+</html>
