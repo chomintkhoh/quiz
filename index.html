@@ -15,6 +15,7 @@ body{
   align-items:center;
   height:100vh;
   font-family:Arial;
+  user-select:none;
 }
 
 .card{
@@ -24,6 +25,7 @@ body{
   padding:20px;
   border-radius:20px;
   text-align:center;
+  position:relative;
 }
 
 img{
@@ -37,6 +39,28 @@ img{
   margin-top:10px;
 }
 
+/* ⭐ 明顯左右箭頭 */
+.arrow{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:40px;
+  font-weight:bold;
+  color:#444;
+  background:rgba(0,0,0,0.1);
+  padding:10px;
+  border-radius:10px;
+}
+
+.left{
+  left:-10px;
+}
+
+.right{
+  right:-10px;
+}
+
+/* ✔ correct */
 .correct{
   background:#d4f8d4;
 }
@@ -46,44 +70,59 @@ img{
 <body>
 
 <div class="card" id="card">
+
+  <!-- ⭐ 左右箭頭 -->
+  <div class="arrow left" onclick="prev()">⬅</div>
+  <div class="arrow right" onclick="next()">➡</div>
+
   <img id="img">
   <div class="name" id="name"></div>
 
   <label>
-    <input type="checkbox" onclick="markCorrect()">
+    <input type="checkbox" onclick="markCorrect(event)">
     Correct
   </label>
+
 </div>
 
 <script>
 
 let data = window.DATA || [];
 let current;
+let index = 0;
 
-function pool(){
-  return data.filter(d => !d.done);
-}
-
+// 📦 load
 function load(){
-  let p = pool();
 
-  if(p.length === 0){
+  if(data.length === 0){
     document.getElementById("name").innerText = "🎉 Done!";
-    document.getElementById("img").src = "";
     return;
   }
 
-  current = p[Math.floor(Math.random()*p.length)];
+  current = data[index];
 
   document.getElementById("img").src = current.img;
   document.getElementById("name").innerText = current.name;
 }
 
+// ➡️ next（只有箭頭才會觸發）
 function next(){
+  index = (index + 1) % data.length;
   load();
 }
 
-function markCorrect(){
+// ⬅️ prev
+function prev(){
+  index = (index - 1 + data.length) % data.length;
+  load();
+}
+
+// ❗️重要：避免「亂點就換」
+function markCorrect(e){
+
+  // ⭐ 阻止觸發其他 click
+  e.stopPropagation();
+
   current.done = true;
 
   let card = document.getElementById("card");
@@ -91,11 +130,25 @@ function markCorrect(){
 
   setTimeout(()=>{
     card.classList.remove("correct");
-    next();
+
+    // 👉 移除已完成
+    data = data.filter(d => !d.done);
+
+    if(index >= data.length){
+      index = 0;
+    }
+
+    load();
+
   },300);
 }
 
-// swipe
+// 🚫 禁止點卡片換圖（修你 bug）
+document.getElementById("card").addEventListener("click", e => {
+  e.stopPropagation();
+});
+
+// swipe（保留）
 let startX=0;
 
 document.addEventListener("touchstart",e=>{
