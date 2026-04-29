@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Generator</title>
+</head>
+
+<body style="font-family:Arial;padding:20px">
+
+<h2>📦 Step 1: Image Quiz Generator</h2>
+
+<p>把圖片名稱填進去（之後可再升級自動掃描）</p>
+
+<textarea id="list" style="width:100%;height:150px">
+japan.jpg
+france.jpg
+malaysia.jpg
+</textarea>
+
+<br><br>
+
+<button onclick="generate()">Generate manifest.js</button>
+
+<pre id="out"></pre>
+
+<script>
+
+function generate() {
+
+  let files = document.getElementById("list").value
+    .split("\n")
+    .filter(f => f.trim() !== "");
+
+  let data = files.map(file => {
+    let name = file.replace(".jpg","")
+                   .replace(".png","")
+                   .toUpperCase();
+
+    return {
+      name: name,
+      img: "images/" + file
+    };
+  });
+
+  let js = "window.DATA = " + JSON.stringify(data, null, 2);
+
+  document.getElementById("out").innerText = js;
+
+  // 👉 下載 manifest.js
+  let blob = new Blob([js], {type:"text/javascript"});
+  let a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "manifest.js";
+  a.click();
+}
+
+</script>
+
+</body>
+</html>
