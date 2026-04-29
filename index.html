@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Swipe Flashcards</title>
+
+<style>
+body {
+  font-family: Arial;
+  text-align: center;
+  margin-top: 30px;
+  background: #f5f5f5;
+}
+
+.card {
+  width: 90%;
+  max-width: 420px;
+  margin: auto;
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+img {
+  width: 100%;
+  height: 260px;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.name {
+  font-size: 22px;
+  margin-top: 10px;
+  font-weight: bold;
+  color: #333;
+}
+
+.swipe-left {
+  transform: translateX(-120%) rotate(-8deg);
+  opacity: 0;
+}
+
+.swipe-right {
+  transform: translateX(120%) rotate(8deg);
+  opacity: 0;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🌍 Swipe Learning Cards</h2>
+
+<div class="card" id="card">
+  <img id="img">
+  <div class="name" id="name"></div>
+</div>
+
+<p id="remain"></p>
+
+<script>
+
+// 📚 題庫（你只改這裡）
+let data = [
+  { name: "Japan", img: "images/japan.jpg" },
+  { name: "France", img: "images/france.jpg" },
+  { name: "Malaysia", img: "images/malaysia.jpg" }
+];
+
+let pool = [...data];
+let current;
+
+function load() {
+  if (pool.length === 0) {
+    document.getElementById("name").innerText = "🎉 Finished!";
+    document.getElementById("img").src = "";
+    return;
+  }
+
+  let i = Math.floor(Math.random() * pool.length);
+  current = pool[i];
+
+  document.getElementById("img").src = current.img;
+  document.getElementById("name").innerText = current.name;
+
+  update();
+}
+
+function next() {
+  swipe("left");
+}
+
+function swipe(dir) {
+  let card = document.getElementById("card");
+
+  if (dir === "left") {
+    card.classList.add("swipe-left");
+  } else {
+    card.classList.add("swipe-right");
+  }
+
+  setTimeout(() => {
+    card.classList.remove("swipe-left", "swipe-right");
+    load();
+  }, 250);
+}
+
+// ⌨️ keyboard support
+document.addEventListener("keydown", function(e){
+  if (e.key === "ArrowRight") next();
+  if (e.key === "ArrowLeft") next();
+});
+
+// 📱 touch swipe
+let startX = 0;
+
+document.addEventListener("touchstart", e => {
+  startX = e.touches[0].clientX;
+});
+
+document.addEventListener("touchend", e => {
+  let endX = e.changedTouches[0].clientX;
+
+  if (startX - endX > 50 || endX - startX > 50) {
+    next();
+  }
+});
+
+function update() {
+  document.getElementById("remain").innerText =
+    "Cards left: " + pool.length;
+}
+
+load();
+
+</script>
+
+</body>
+</html>
